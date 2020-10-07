@@ -30,32 +30,30 @@ def filter_deep_object_param(
 
     As an example, this will match query parameters like:
 
-    1. `system_profile[sap_system]=true`
-    2. `system_profile[cpu_flags][contains]=clzero`
-    3. `system_profile[system_memory_bytes][gt]=4000000000`
+    1. `filter[system_profile][sap_system]=true`
+    2. `filter[system_profile][cpu_flags][contains]=clzero`
+    3. `filter[system_profile][system_memory_bytes][gt]=4000000000`
 
-    And produce a filter equivalent to:
+    And produce filters equivalent to:
 
     1. `system_profile__sap_system=True`
     2. `system_profile__cpu_flags__contains='clzero'`
     3. `system_profile__system_memory_bytes__gt=4000000000`
 
-    Note that for the `gt` operator the value is converted to a number, and
-    the special values '`true`', '`True`', '`false`' and '`False`' are
-    converted to Python `True` and `False` boolean values respectively.
-
     Numbers do not match strings in JSON value introspection, so
     `system_profile[number_of_sockets]=1` will convert to the filter
     `system_profile__number_of_sockets='1'` and will not match a record where
     number of sockets is the number `1`.  A value that is wholly digits will
-    be converted to an integer if the 'eq' or 'ne' operators are given, so
+    be converted to an integer if the `eq` or `ne` operators are given, so
     `system_profile[number_of_sockets][eq]=1` will match an integer number
-    of sockets value.
+    of sockets value.  The `lt` and `gt` operators will convert their values
+    to numbers.
 
-    All these would be matched by an openapi.Parameter with the name
-    `system_profile`.  If more than one of these parameter constructions
-    appears in the parameters supplied, these will be ANDed together in the
-    returned filter.
+    The special values '`true`', '`True`', '`false`' and '`False`' are
+    converted to Python `True` and `False` boolean values respectively.
+
+    If more than one of these parameter constructions appears in the
+    parameters supplied, these will be ANDed together in the returned filter.
 
     The operators supported are based on:
 
@@ -65,6 +63,7 @@ def filter_deep_object_param(
     they might also be a key in a dictionary, this also allows us to accept
     all standard Django filter operators.  E.g. we accept both 'starts_with'
     and 'startswith'.
+
     This is roughly compliant with OpenAPI 3's 'deepObject' object parameter
     style, but OpenAPI 2 does not recognise them at all and there is no way
     to express such a parameter in OpenAPI 2.  Therefore, we do not use or
